@@ -1,5 +1,7 @@
 # bpnet-lite
 
+[![PyPI Downloads](https://static.pepy.tech/badge/bpnet-lite)](https://pepy.tech/projects/bpnet-lite)
+
 > **Note**
 > IMPORTANT: bpnet-lite is not meant to replace the full service implementations of BPNet or ChromBPNet. Please see the official repositories for those projects for TensorFlow/Keras implementations of those models along with complete tutorials on how to use them effectively.
 
@@ -44,7 +46,7 @@ bpnet-lite comes with a command-line tool, `bpnet`, that supports the steps nece
 bpnet negatives -i <peaks>.bed -f <fasta>.fa -b <bigwig>.bw -o matched_loci.bed -l 0.02 -w 2114 -v
 bpnet fit -p bpnet_fit_example.json
 bpnet predict -p bpnet_predict_example.json
-bpnet interpret -p bpnet_interpret_example.json
+bpnet attribute -p bpnet_attribute_example.json
 bpnet marginalize -p bpnet_marginalize_example.json
 ```
 
@@ -64,12 +66,12 @@ Generally, one can perform the same analyses using ChromBPNet as one can using B
 
 ###
 
-bpnet-lite comes with a second command-line tool, `chrombpnet`, that supports the steps necessary for training and using ChromBPNet models. These commands are used exactly the same way as the `bpnet` command-line tool with only minor changes to the parameters in the JSON. Note that the `predict`, `interpret` and `marginalize` commands will internally run their `bpnet` counterparts, but are still provided for convenience.
+bpnet-lite comes with a second command-line tool, `chrombpnet`, that supports the steps necessary for training and using ChromBPNet models. These commands are used exactly the same way as the `bpnet` command-line tool with only minor changes to the parameters in the JSON. Note that the `predict`, `attribute` and `marginalize` commands will internally run their `bpnet` counterparts, but are still provided for convenience.
 
 ```
 chrombpnet fit -p chrombpnet_fit_example.json
 chrombpnet predict -p chrombpnet_predict_example.json
-chrombpnet interpret -p chrombpnet_interpret_example.json
+chrombpnet attribute -p chrombpnet_attribute_example.json
 chrombpnet marginalize -p chrombpnet_marginalize_example.json
 ```
 
@@ -88,8 +90,8 @@ The first step is loading data. Much like with the command-line tool, if you're 
 ```python
 import torch
 
-from bpnetlite.io import extract_loci
-from bpnetlite.io import LocusGenerator
+from tangermeme.io import extract_loci
+from bpnetlite.io import PeakGenerator
 from bpnetlite import BPNet
 
 peaks = 'test/CTCF.peaks.bed' # A set of loci to train on.
@@ -103,10 +105,10 @@ After specifying filepaths for each of these, you can create the data generator.
 ```python
 training_chroms = ['chr{}'.format(i) for i in range(1, 17)]
 
-training_data = LocusGenerator(peaks, seqs, signals, controls, chroms=training_chroms)
+training_data = PeakGenerator(peaks, seqs, signals, controls, chroms=training_chroms)
 ```
 
-The `LocusGenerator` function is a wrapper around several functions that extract data, pass them into a generator that applies shifts and shuffling, and pass that generator into a PyTorch data loader object for use during training. The end result is an object that can be directly iterated over while training a bpnet-lite model. 
+The `PeakGenerator` function is a wrapper around several functions that extract data, pass them into a generator that applies shifts and shuffling, and pass that generator into a PyTorch data loader object for use during training. The end result is an object that can be directly iterated over while training a bpnet-lite model. 
 
 Although wrapping all that functionality is good for the training set, the validation set should remain constant during training. Hence, one should only use the `extract_loci` function that is the first step when handling the training data.
 
