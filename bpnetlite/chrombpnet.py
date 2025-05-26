@@ -179,17 +179,18 @@ class ChromBPNet(torch.nn.Module):
 
 		self.logger = Logger(["Epoch", "Iteration", "Training Time",
 			"Validation Time", "Training MNLL", "Training Count MSE", 
-			"Validation MNLL", "Validation Profile Correlation", 
+			"Validation MNLL", "Validation Profile Pearson", 
 			"Validation Count Pearson", "Validation Count MSE", "Saved?"], 
 			verbose=verbose)
 
+		iteration = 0
 		early_stop_count = 0
 		start, best_loss = time.time(), float("inf")
-		
 		self.logger.start()
 		self.bias.eval()
+
 		for epoch in range(max_epochs):
-			for iteration, (X, y) in enumerate(training_data):
+			for X, y in training_data:
 				self.accessibility.train()
 
 				X = X.cuda()
@@ -253,6 +254,8 @@ class ChromBPNet(torch.nn.Module):
 							measures['count_mse'].mean().item(),
 							(valid_loss < best_loss).item()])
 
+						self.logger.save("{}.log".format(self.name))
+
 						if valid_loss < best_loss:
 							torch.save(self, "{}.torch".format(self.name))
 							torch.save(self.accessibility, 
@@ -267,7 +270,7 @@ class ChromBPNet(torch.nn.Module):
 				if early_stopping is not None and early_stop_count >= early_stopping:
 					break
 
-			self.logger.save("{}.log".format(self.name))
+				iteration += 1
 
 			if early_stopping is not None and early_stop_count >= early_stopping:
 				break
