@@ -249,18 +249,18 @@ def marginalization_report(model, motifs, X, output_dir, batch_size=64,
 
 		results['name'].append(name)
 		results['sequence'].append(motif_)
-		results[p + ' (before)'].append(oname + pb + ".png")
-		results[p + ' (after)'].append(oname + pa + ".png")
-		results[p + ' (diff)'].append(oname + pd + ".png")
-		results[c].append(oname + ".counts.png")
+		results[p + ' (before)'].append(name + pb + ".png")
+		results[p + ' (after)'].append(name + pa + ".png")
+		results[p + ' (diff)'].append(name + pd + ".png")
+		results[c].append(name + ".counts.png")
 
 		if attributions:
-			results[p + a + ' (before)'].append(oname + pab + ".png")
-			results[p + a + ' (after)'].append(oname + paa + ".png")
-			results[p + a + ' (diff)'].append(oname + pad + ".png")
-			results[c + a + ' (before)'].append(oname + cab + ".png")
-			results[c + a + ' (after)'].append(oname + caa + ".png")
-			results[c + a + ' (diff)'].append(oname + cad + ".png")
+			results[p + a + ' (before)'].append(name + pab + ".png")
+			results[p + a + ' (after)'].append(name + paa + ".png")
+			results[p + a + ' (diff)'].append(name + pad + ".png")
+			results[c + a + ' (before)'].append(name + cab + ".png")
+			results[c + a + ' (after)'].append(name + caa + ".png")
+			results[c + a + ' (diff)'].append(name + cad + ".png")
 
 	if not attributions:
 		for key in results.keys():
@@ -278,3 +278,27 @@ def marginalization_report(model, motifs, X, output_dir, batch_size=64,
 
 	results_df.to_html(open('{}/marginalization.html'.format(output_dir), 'w'),
 		escape=False, formatters=formatters, index=False)
+	
+	outbase = os.path.join(output_dir, "marginalization_data")
+	numpy.savez_compressed(outbase + ".X.npz", X=X.numpy())
+	numpy.savez_compressed(outbase + ".motifs.npz", motifs=numpy.array([m[0] for m in motifs], dtype="U"))
+	numpy.savez_compressed(outbase + ".profiles.npz",
+		p_before=p_before,
+		p_after=p_after,
+		p_diff=p_diff
+	)
+	numpy.savez_compressed(outbase + ".counts.npz",
+		c_before=c_before,
+		c_after=c_after
+	)
+	if attributions:
+		numpy.savez_compressed(outbase + "counts.attributions.npz",
+			ac_before=acb,
+			ac_after=aca,
+			ac_diff=acd
+		)
+		numpy.savez_compressed(outbase + ".profile.attributions.npz",
+			ap_before=apb,
+			ap_after=apa,
+			ap_diff=apd,
+		)
